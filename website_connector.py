@@ -7,8 +7,10 @@ class WebsiteConnector:
         self.base_url = base_url
         self.login_url = f"{base_url}/login"
         self.challeges_url = f'{base_url}/challenges'
+        self.api_url = f'{base_url}/api/v1/challenges'
         
         self.session = requests.Session()
+        self.logged_in = False
         
         self.config_file = config_file
         self.username = None
@@ -27,6 +29,15 @@ class WebsiteConnector:
             self.username = None
             self.password = None
 
+    def _get_page(self, url):
+        try:
+            response = self.session.get(url, allow_redirects = True)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as e:
+            print(f"Error during GET request at {url}: {e}")
+            return None
+
     def login(self):
         if not self.username or not self.password:
             print("No credentials found. Please check the config.ini file")
@@ -34,8 +45,11 @@ class WebsiteConnector:
 
         try:
             # Obtain nonce
-            login_page_response = self.session.get(self.login_url)
-            login_page_response.raise_for_status()
+            login_page_response = self._get_page(self.login_url)
+            if not login_page_response:
+                print("Error during the login")
+                return False
+            
             soup = BeautifulSoup(login_page_response.text, 'html.parser')
             
             # Find nonce
@@ -62,6 +76,7 @@ class WebsiteConnector:
             # Check the login
             if response.url == self.challeges_url:
                 print(f"Login successfull. Redirecting to {response.url}")
+                self.logged_in = True
                 return True
             else:
                 print(f'Error during the login. Final URL: {response.url}')
@@ -74,3 +89,26 @@ class WebsiteConnector:
         except Exception as e:
             print(f'Unexpected error: {e}')
             return False
+    
+    def get_categories(self):
+        if not self.logged_in:
+            print("Login first")
+            return None
+        
+        challenges_response = self._get_page(self.api_url)
+        if not challenges_response:
+            print("Cannot GET challenges page")
+            return None
+        data = challenges_response.json()
+        
+        challenges_list = data.get("data", [])
+        categories_count = {}
+        for chal in challenges_list:
+            category = chal.get('category', 'unknown')
+            if category in categories_count:
+                categories_count[category] += 1
+            else:
+                categories_count[category] = 1
+                
+        categories = [(cat, count) for cat, count in categories_count.items()]
+        return categories

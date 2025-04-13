@@ -5,6 +5,9 @@ if __name__ == "__main__":
     connector = WebsiteConnector(base_url)
     
     if connector.login():
-        print("Login succeded :)")
+        print("Logged in :)")
     else:
         print("Login failed :(")
+        exit(-1)
+        
+    print(connector.get_categories())
