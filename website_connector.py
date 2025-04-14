@@ -112,3 +112,36 @@ class WebsiteConnector:
             parsed_challenges.append(modified)
             
         return parsed_challenges
+    
+    def challenge_info(self, id) -> tuple[dict, dict]:
+        data = self._get_page(self.api_url + '/' + str(id))
+        solves = self._get_page(self.api_url + '/' + str(id) + '/solves')
+        
+        if not data or not solves:
+            print("Cannot GET challenges info")
+            return None, None
+        
+        chal_data = data.json().get('data', dict())
+        chal_solves = solves.json().get('data', [])
+        
+        # Parsing challenge data
+        data_to_keep = ["id", "name", "value", "description", "solves", "solved_by_me", "category", "files"]
+        parsed = {}
+        for field in data_to_keep:
+            if field in chal_data:
+                parsed[field] = chal_data[field]
+        
+        # Parsing solvers' name
+        parsed_solvers = []
+        for solver in chal_solves:
+            parsed_solvers.append(solver['name'])
+            
+        return parsed, parsed_solvers
+    
+    def download_attachments(self, file_url):
+        file = self._get_page(self.base_url + '/' + file_url)
+        if file:
+            return file.content
+        else:
+            print('Cannot download file')
+            return None

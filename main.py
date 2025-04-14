@@ -43,7 +43,7 @@ def prompt_for_category(categories):
 if __name__ == "__main__":
     base_url = "https://cc-ctfd.m0lecon.it"
     connector = WebsiteConnector(base_url)
-    state_manager = ChallengeStateManager()
+    state_manager = ChallengeStateManager(main_dir = '../ctf_prova')
     
     if connector.login():
         print("Logged in :)")
@@ -55,6 +55,6 @@ if __name__ == "__main__":
     pending_categories = get_pending_categories(state_manager, challenges)
     
     selected = prompt_for_category(pending_categories)
-    state_manager.update(challenges, selected = selected)
+    state_manager.update(challenges, connector, selected = selected)
     
     state_manager.save_state()
