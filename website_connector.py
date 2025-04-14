@@ -75,7 +75,7 @@ class WebsiteConnector:
 
             # Check the login
             if response.url == self.challeges_url:
-                print(f"Login successfull. Redirecting to {response.url}")
+                # print(f"Login successfull. Redirecting to {response.url}")
                 self.logged_in = True
                 return True
             else:
@@ -90,7 +90,7 @@ class WebsiteConnector:
             print(f'Unexpected error: {e}')
             return False
     
-    def get_categories(self):
+    def get_challenges(self):
         if not self.logged_in:
             print("Login first")
             return None
@@ -102,13 +102,13 @@ class WebsiteConnector:
         data = challenges_response.json()
         
         challenges_list = data.get("data", [])
-        categories_count = {}
+        parsed_challenges = []
+        to_keep = ["id", "name", "value", "solves", "solved_by_me", "category"]
         for chal in challenges_list:
-            category = chal.get('category', 'unknown')
-            if category in categories_count:
-                categories_count[category] += 1
-            else:
-                categories_count[category] = 1
-                
-        categories = [(cat, count) for cat, count in categories_count.items()]
-        return categories
+            modified = {}
+            for field in to_keep:
+                if field in chal:
+                    modified[field] = chal[field]
+            parsed_challenges.append(modified)
+            
+        return parsed_challenges
