@@ -94,7 +94,7 @@ class ChallengeStateManager:
                 # Call the api
                 print(f'\tAsking for "{chal['name']}" info')
                 chal_data, solvers = website.challenge_info(id)
-                if not chal_data or not solvers:
+                if not chal_data and not solvers:
                     continue
                 
                 # Update files

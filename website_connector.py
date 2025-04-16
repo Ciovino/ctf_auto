@@ -117,7 +117,7 @@ class WebsiteConnector:
         data = self._get_page(self.api_url + '/' + str(id))
         solves = self._get_page(self.api_url + '/' + str(id) + '/solves')
         
-        if not data or not solves:
+        if not data and not solves:
             print("Cannot GET challenges info")
             return None, None
         
