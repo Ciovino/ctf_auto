@@ -66,7 +66,7 @@ class ChallengeStateManager:
             id = chal['id']
             if not chal['pending']:
                 new_state.append(self.get_challenge_by_id(id))
-            if selected == '' or chal['category'] == selected:
+            if chal['pending'] and (selected == '' or chal['category'] == selected):
                 print(f'Saving: {chal['name']}')
                 
                 chal['pending'] = False
