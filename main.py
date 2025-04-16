@@ -27,7 +27,7 @@ def prompt_for_category(categories):
     try:
         update = int(input('> ').strip())
     except ValueError:
-        print('Not a valid input\nUpdating nothing')
+        print('Updating nothing')
         return None
     
     if update == 0:
@@ -48,6 +48,17 @@ if __name__ == "__main__":
     try:
         os.chdir(script_dir)
         print(f'Changing to {os.getcwd()}')
+        
+        # Check if the config.ini file is created
+        if not os.path.exists('config.ini'):
+            # Create a template
+            print('confing.ini not found. Creating a new template')
+            with open('config.ini', 'w') as f:
+                f.write("[credentials]\n")
+                f.write("username = \n")
+                f.write("password = \n")
+            print('config.ini created. Please write your credentials in the file')
+            exit(1)
     
         base_url = "https://cc-ctfd.m0lecon.it"
         connector = WebsiteConnector(base_url)
