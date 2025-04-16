@@ -51,9 +51,9 @@ case "$SHELL" in
 esac
 
 if [[ "$SHELL" == */fish ]]; then
-    ALIAS_CMD="alias $ALIAS_NAME 'source $(pwd)/$VENV/bin/activate; python $(pwd)/main.py'"
+    ALIAS_CMD="alias $ALIAS_NAME 'source $(pwd)/$VENV/bin/activate; python $(pwd)/main.py; deactivate'"
 else
-    ALIAS_CMD="alias $ALIAS_NAME=\"source $(pwd)/$VENV/bin/activate && python $(pwd)/main.py\""
+    ALIAS_CMD="alias $ALIAS_NAME=\"source $(pwd)/$VENV/bin/activate && python $(pwd)/main.py; deactivate\""
 fi
 
 # Add alias if it doesn't exist
