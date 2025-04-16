@@ -31,7 +31,6 @@ if [ ! -d "$PYTHON_VENV" ]; then
     fi
 
     echo "Setup complete."
-    exit 0
 fi 
 
 # Create the alias in the correct shell
