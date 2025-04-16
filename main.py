@@ -40,10 +40,10 @@ def prompt_for_category(categories):
         print('Updating nothing')
         return None
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     base_url = "https://cc-ctfd.m0lecon.it"
     connector = WebsiteConnector(base_url)
-    state_manager = ChallengeStateManager(main_dir = '../ctf_prova')
+    state_manager = ChallengeStateManager()
     
     if connector.login():
         print("Logged in :)")

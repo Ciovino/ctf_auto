@@ -2,6 +2,7 @@ import json
 import os
 from urllib.parse import urlparse, unquote
 from website_connector import WebsiteConnector
+from html_to_markdown import convert_to_markdown
 
 class ChallengeStateManager:
     def __init__(self, state_file = 'challenge_state.json', main_dir = '../ctf'):
@@ -67,6 +68,8 @@ class ChallengeStateManager:
             if not chal['pending']:
                 new_state.append(self.get_challenge_by_id(id))
             if selected == '' or chal['category'] == selected:
+                print(f'Saving: {chal['name']}')
+                
                 chal['pending'] = False
                 cat = chal['category']
                 chal_path = cat + '/' + chal['name']
@@ -75,27 +78,37 @@ class ChallengeStateManager:
                 
                 # create the category directory
                 if not os.path.exists(self.full_path(cat)):
+                    print(f'\t{cat} directory not found. Making a new one')
                     os.makedirs(self.full_path(cat), exist_ok = True)
                 # create the challenge directory
                 if not os.path.exists(self.full_path(chal_path)):
+                    print(f'\t"{chal['name']}" directory not found. Making a new one')
                     os.makedirs(self.full_path(chal_path), exist_ok = True)
                 # check if the 'challenge' folder exists
                 # update file if the directory does not exists
                 if not os.path.exists(self.full_path(file_challenge)):
+                    print('\tChallenge directory not found. Making a new one')
                     os.makedirs(self.full_path(file_challenge), exist_ok = True)
                     update_file = True
                     
                 # Call the api
+                print(f'\tAsking for "{chal['name']}" info')
                 chal_data, solvers = website.challenge_info(id)
+                if not chal_data or not solvers:
+                    continue
                 
                 # Update files
-                # 1. general_info.txt
-                with open(self.full_path(chal_path + '/general_info.txt'), 'w') as f:
-                    f.write(f'({chal_data['id']}) {chal_data['name']}: {chal_data['category']}\n')
-                    f.write(f'{chal_data['value']} points, {'Solved' if chal_data['solved_by_me'] else 'Not Solved'}\n\n')
-                    f.write(f'Description:\n{chal_data['description']}')
+                # 1. general_info.md
+                print('\tWriting "general_info.md"')
+                with open(self.full_path(chal_path + '/general_info.md'), 'w') as f:
+                    f.write(f'# ({chal_data['id']}) {chal_data['name']}\n')
+                    f.write(f'- Category: {chal_data['category']}\n')
+                    f.write(f'- {chal_data['value']} points\n')
+                    f.write(f'- {'**Solved**' if chal_data['solved_by_me'] else '==Not== Solved'}\n\n')
+                    f.write(f'## Description:\n{convert_to_markdown(chal_data['description'])}')
                 
                 # 2. solvers.txt
+                print('\tWriting "solvers.txt"')
                 with open(self.full_path(chal_path + '/solvers.txt'), 'w') as f:
                     f.write(f'{chal_data['solves']} people solved this:\n')
                     for solver in solvers:
@@ -105,8 +118,9 @@ class ChallengeStateManager:
                 if len(chal_data['files']) > 0 and update_file:
                     for file in chal_data['files']:
                         name = ChallengeStateManager.get_filename_from_url(file)
-                        content = website.download_attachments(file)
                         
+                        print(f'\tDownloading "{name}"')
+                        content = website.download_attachments(file)
                         if content is None:
                             continue
                         
