@@ -2,7 +2,6 @@ import json
 import os
 from urllib.parse import urlparse, unquote
 from website_connector import WebsiteConnector
-from html_to_markdown import convert_to_markdown
 
 class ChallengeStateManager:
     def __init__(self, state_file = 'challenge_state.json', main_dir = '../ctf'):
@@ -105,7 +104,7 @@ class ChallengeStateManager:
                     f.write(f'- Category: {chal_data['category']}\n')
                     f.write(f'- {chal_data['value']} points\n')
                     f.write(f'- {'**Solved**' if chal_data['solved_by_me'] else '==Not== Solved'}\n\n')
-                    f.write(f'## Description:\n{convert_to_markdown(chal_data['description'])}')
+                    f.write(f'## Description:\n{chal_data['description']}')
                 
                 # 2. solvers.txt
                 print('\tWriting "solvers.txt"')
