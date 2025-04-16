@@ -1,6 +1,7 @@
 from website_connector import WebsiteConnector
 from challenge_state_manager import ChallengeStateManager
 from collections import defaultdict
+import os
 
 def get_pending_categories(state: ChallengeStateManager, challenges: list[dict]):
     pending_categories = defaultdict(int)
@@ -40,21 +41,30 @@ def prompt_for_category(categories):
         print('Updating nothing')
         return None
 
-if __name__ == "__main__":    
-    base_url = "https://cc-ctfd.m0lecon.it"
-    connector = WebsiteConnector(base_url)
-    state_manager = ChallengeStateManager()
+if __name__ == "__main__":
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    caller_cwd = os.getcwd()
     
-    if connector.login():
-        print("Logged in :)")
-    else:
-        print("Login failed :(")
-        exit(-1)
+    try:
+        os.chdir(script_dir)
+        print(f'Changing to {os.getcwd()}')
+    
+        base_url = "https://cc-ctfd.m0lecon.it"
+        connector = WebsiteConnector(base_url)
+        state_manager = ChallengeStateManager()
         
-    challenges = connector.get_challenges()
-    pending_categories = get_pending_categories(state_manager, challenges)
-    
-    selected = prompt_for_category(pending_categories)
-    state_manager.update(challenges, connector, selected = selected)
-    
-    state_manager.save_state()
+        if connector.login():
+            print("Logged in :)")
+        else:
+            print("Login failed :(")
+            exit(-1)
+            
+        challenges = connector.get_challenges()
+        pending_categories = get_pending_categories(state_manager, challenges)
+        
+        selected = prompt_for_category(pending_categories)
+        state_manager.update(challenges, connector, selected = selected)
+        
+        state_manager.save_state()
+    finally:
+        os.chdir(caller_cwd)
