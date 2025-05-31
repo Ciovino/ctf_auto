@@ -22,8 +22,8 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
 
 1.  **Clone the Repository** (If you haven't already):
     ```bash
-    git clone <your-repository-url>
-    cd <your-repository-name>
+    git clone https://github.com/Ciovino/ctf_auto.git
+    cd ctf_auto
     ```
 
 2.  **Run the Setup Script**:
