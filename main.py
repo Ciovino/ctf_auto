@@ -94,7 +94,7 @@ if __name__ == "__main__":
         if not os.path.exists(config_file_path):
             print(f"'{config_file_path}' not found.")
             print("Please create a config.ini file with your site configurations.")
-            # ... (rest of your config file creation/warning logic) ...
+            print('Check out the "config.ini.example"')
             exit(1)
 
         config = configparser.ConfigParser()

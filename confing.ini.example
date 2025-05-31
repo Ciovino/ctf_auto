@@ -1,0 +1,10 @@
+[global_settings]
+main_challenges_dir = /path/to/main/directory
+state_file_name = name_of_the_file.json
+
+[molecon]
+enabled = true
+base_url = https://cc-ctfd.m0lecon.it
+username = YOUR NAME
+password = YouR_s3cRET_P4sSw0rD
+connector = website_connectors.molecon.WebsiteMolecon
