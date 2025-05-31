@@ -35,11 +35,7 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
     * The script will create a Python virtual environment (default: `.venv/`).
     * It will install the required Python packages from `requirements.txt`.
     * You will be prompted to enter a preferred alias (command name) to run the main program.
-    * After the script finishes, you might need to reload your shell's configuration file:
-        * For Bash: `source ~/.bashrc`
-        * For Zsh: `source ~/.zshrc`
-        * For Fish: `source ~/.config/fish/config.fish`
-        * Or, simply restart your terminal.
+    * After the script finishes, you might need to reload your shell's configuration file or, simply restart your terminal.
 
 3.  **Configure `config.ini`**:
     * If `config.ini` does not exist in the script's directory, you might to create it from `config.ini.example`.
