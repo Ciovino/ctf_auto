@@ -55,7 +55,7 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
         base_url = [https://ctfplatform.com](https://ctfplatform.com)
         username = your_username
         password = your_password
-        connector = connectors.platform_connector.PlatformConnector
+        connector = website_connectors.platform_connector.PlatformConnector
         ```
         * Replace placeholder values with your actual details.
         * The `connector` should be the full Python path to the connector class for that platform (e.g., `folderName.fileName.ClassName`).
@@ -99,8 +99,8 @@ Challenges are organized as follows:
 │
 
 project_root_directory/         # Your cloned repository
-├── connectors/
-│   ├── base_connector.py
+├── website_connectors/
+│   ├── base_website.py
 │   ├── molecon.py
 │   └── ... (other custom connectors)
 ├── .venv/
@@ -127,14 +127,14 @@ Inside each challenge folder (e.g., SuperSecureLogin/):
 ## Adding New CTF Platforms
 This tool is designed to be extensible:
 1. Create a Connector Class:
-    * Develop a new Python class that inherits from connectors.base_connector.WebsiteConnectorBase.
+    * Develop a new Python class that inherits from website_connectors.base_website.WebsiteConnectorBase.
     * Implement all the abstract methods defined in the base class (e.g., login(), get_challenges(), get_challenge_details(), download_attachment()) with the specific logic for the new CTF platform.
-    * Place your new connector file (e.g., my_new_site_connector.py) inside the connectors/ directory. Make sure this directory has an __init__.py file to be treated as a package.
+    * Place your new connector file (e.g., my_new_site_connector.py) inside the website_connectors/ directory. Make sure this directory has an __init__.py file to be treated as a package.
 2. Configure in config.ini:
     * Add a new section for your platform (e.g., [my_new_site]).
     * Set enabled = true.
     * Provide base_url and any necessary authentication details (e.g., username, password, api_key).
-    * Set connector_class to the full path of your new class, for example: connectors.my_new_site_connector.MyNewSiteConnectorClass.
+    * Set connector_class to the full path of your new class, for example: website_connectors.my_new_site_connector.MyNewSiteConnectorClass.
 
 ## Notes
 * The name of the virtual environment folder (default .venv) can be changed by editing the VENV_NAME variable within the setup.sh script if needed.
