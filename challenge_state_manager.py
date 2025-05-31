@@ -1,33 +1,22 @@
 import json
 import os
 from urllib.parse import urlparse, unquote
-# WebsiteConnector is no longer directly used here as an import for type hinting in 'update'
-# The actual connector instances will be passed in the 'connectors_map'
 
 class ChallengeStateManager:
     def __init__(self, state_file_name='challenge_state.json', main_challenges_dir='../ctf'):
-        # Note: state_file_name is just the name, not the full path yet.
+        # Note: state_file_name is just the name, not the full path
         self.state_file_name = state_file_name
         self.challenges_directory = main_challenges_dir
-        
-        # self.state will be a dictionary: { "platform_key": [chal1, chal2], ... }
+      
         self.state = self.load_state()
     
     def _get_full_state_file_path(self):
-        """Helper to get the full path to the state file."""
-        # The state file is global, so it's directly in challenges_directory
         return os.path.join(self.challenges_directory, self.state_file_name)
 
     def _get_platform_challenge_base_path(self, platform_key, category, challenge_name):
-        """Constructs the base path for a specific challenge on a platform."""
         return os.path.join(self.challenges_directory, platform_key, category, challenge_name)
 
     def load_state(self):
-        """
-        Loads the state from the JSON file.
-        The state is expected to be a dictionary mapping platform_keys to lists of challenges.
-        """
-        # Ensure the main challenges directory exists
         if not os.path.exists(self.challenges_directory):
             os.makedirs(self.challenges_directory, exist_ok=True)
             print(f"Created main challenges directory: {self.challenges_directory}")
@@ -37,7 +26,8 @@ class ChallengeStateManager:
             try:
                 with open(full_state_path, 'r', encoding='utf-8') as f:
                     loaded_state = json.load(f)
-                    # Basic validation for the new structure (must be a dict)
+                    
+                    # Reset if not dictionary
                     if not isinstance(loaded_state, dict):
                         print(f"Warning: State file at {full_state_path} is not in the expected dictionary format. Initializing empty state.")
                         return {}
@@ -51,7 +41,6 @@ class ChallengeStateManager:
         return {} # Return empty dict if file doesn't exist
     
     def save_state(self):
-        """Saves the current state (dictionary of platforms to challenge lists) to the JSON file."""
         full_state_path = self._get_full_state_file_path()
         try:
             with open(full_state_path, 'w', encoding='utf-8') as f:
@@ -60,9 +49,6 @@ class ChallengeStateManager:
             print(f"Error saving state file {full_state_path}: {e}")
             
     def get_challenge_from_state(self, platform_key, challenge_id):
-        """
-        Retrieves a specific challenge from the loaded state by platform and ID.
-        """
         platform_challenges = self.state.get(platform_key, [])
         for chal in platform_challenges:
             if chal.get('id') == challenge_id:
@@ -70,11 +56,6 @@ class ChallengeStateManager:
         return {} # Return empty dict if not found
 
     def is_pending(self, new_website_chal_data: dict):
-        """
-        Checks if a challenge (new_website_chal_data from website) needs an update
-        compared to its state on disk.
-        new_website_chal_data MUST contain 'platform' and 'id' keys.
-        """
         platform_key = new_website_chal_data.get('platform')
         challenge_id = new_website_chal_data.get('id')
 
@@ -101,34 +82,23 @@ class ChallengeStateManager:
         
         return False # Not pending if all checked fields are the same
     
-    @staticmethod # This can be a static method as it doesn't rely on instance state
+    @staticmethod
     def get_filename_from_url(url: str):
         try:
             path = urlparse(url).path
             filename = os.path.basename(path)
-            return unquote(filename) # Decode URL-encoded characters like %20
+            return unquote(filename)
         except Exception:
             # fallback if URL is malformed or unexpected
             return "unknown_file"
 
     def update(self, all_challenges: list, connectors_map: dict, selected_category_filter: str):
-        """
-        Updates the local state and files for challenges.
-
-        Args:
-            all_challenges (list): A list of all challenge dictionaries fetched
-                                                 from all websites. Each dict MUST have a 'platform' key.
-            connectors_map (dict): A map of {platform_key: connector_instance}.
-            selected_category_filter (str): A string like "platform_key/category_name" or "" for all,
-                                            or None to update nothing.
-        """
         if selected_category_filter is None: # User chose to update nothing
             print("No category selected for update. Skipping challenge processing.")
             return
 
-        next_global_state = {} # We will build the new state here
+        next_global_state = {}
 
-        # Ensure all platforms from current websites have an entry in next_global_state
         for chal_data_from_web in all_challenges:
             platform_key = chal_data_from_web['platform']
             if platform_key not in next_global_state:
@@ -146,10 +116,9 @@ class ChallengeStateManager:
             category_name = chal_data_from_web.get('category', 'dunno')
             challenge_name = chal_data_from_web.get('name', f"challenge_{challenge_id}")
 
-            # Normalize challenge_name to be filesystem-friendly (basic example)
+            # Remove spaces and weird chars from challenge_name
             safe_challenge_name = "".join(c if c.isalnum() or c in ('_', '-') else '' for c in challenge_name.replace(' ', '_')).strip()
             if not safe_challenge_name: safe_challenge_name = f"challenge_{challenge_id}"
-
 
             current_platform_category_key = f"{platform_key}/{category_name}"
             
@@ -167,39 +136,31 @@ class ChallengeStateManager:
                 connector = connectors_map.get(platform_key)
                 if not connector:
                     print(f"\tWarning: No active connector found for platform '{platform_key}'. Skipping API calls for this challenge.")
-                    # Add the challenge as is, or based on old state, but cannot fetch new details
                     current_state_for_chal = self.get_challenge_from_state(platform_key, challenge_id)
                     if current_state_for_chal:
                          next_global_state[platform_key].append(current_state_for_chal)
                     else:
-                        chal_data_from_web['pending'] = True # Still pending as we couldn't process
+                        chal_data_from_web['pending'] = True # Still pending
                         next_global_state[platform_key].append(chal_data_from_web)
                     continue
 
-                # Define paths, now platform-aware
                 challenge_base_fs_path = self._get_platform_challenge_base_path(platform_key, category_name, safe_challenge_name)
                 challenge_files_subfolder_path = os.path.join(challenge_base_fs_path, 'challenge') # For attachments
 
                 # Create directories
-                # exist_ok=True means it won't raise an error if the directory already exists
                 newly_created_challenge_files_subfolder = False
                 if not os.path.exists(challenge_files_subfolder_path):
                     os.makedirs(challenge_files_subfolder_path, exist_ok=True)
                     print(f"\tCreated directory: {challenge_files_subfolder_path}")
                     newly_created_challenge_files_subfolder = True # Download files if this dir is new
-                else:
-                    # If you want to re-download files if some are missing, add logic here
-                    pass
-
 
                 print(f"\tFetching detailed info for '{safe_challenge_name}' from '{platform_key}'...")
                 # Use the specific connector for this platform
                 detailed_chal_data, solvers_list = connector.get_challenge_details(challenge_id)
                 
-                if not detailed_chal_data: # Solvers_list can be empty, but data is crucial
+                if not detailed_chal_data:
                     print(f"\tWarning: Failed to fetch detailed info for '{safe_challenge_name}'. It might be partially updated or skipped.")
-                    # Add the web data (which is less detailed) and mark as still pending if needed
-                    chal_data_from_web['pending'] = True # Failed to get details, so still pending
+                    chal_data_from_web['pending'] = True # Failed to get details, still pending
                     next_global_state[platform_key].append(chal_data_from_web)
                     continue
                 
@@ -231,10 +192,9 @@ class ChallengeStateManager:
                     print(f"\tError writing solvers.txt for {safe_challenge_name}: {e}")
                         
                 # 3. Download attachments
-                # Logic: Download if the 'challenge' subfolder was just created,
-                # OR if you implement a more sophisticated check (e.g., file missing, force update)
                 problem_with_download = False
                 retry_download = self.get_challenge_from_state(platform_key, detailed_chal_data.get('id', challenge_id)).get('need_download_again', False)
+                
                 if detailed_chal_data.get('files') and (newly_created_challenge_files_subfolder or retry_download):
                     print(f"\tDownloading attachments for '{safe_challenge_name}'...")
                     for file_relative_url in detailed_chal_data['files']: # Assuming 'files' is a list of relative URLs
@@ -258,27 +218,20 @@ class ChallengeStateManager:
                             print(f"\t\tFailed to download '{attachment_name}'.")
                             problem_with_download = True
                 
-                # This challenge has been processed, update its state for saving
-                # Use detailed_chal_data as it's more complete, but ensure 'platform' is there
-                final_chal_data_for_state = dict(detailed_chal_data) # Make a copy
+                # Update
+                final_chal_data_for_state = dict(detailed_chal_data)
                 final_chal_data_for_state['platform'] = platform_key 
                 final_chal_data_for_state['pending'] = problem_with_download # If some problem happend during download, mark that as pending
                 final_chal_data_for_state['need_download_again'] = problem_with_download
                 next_global_state[platform_key].append(final_chal_data_for_state)
 
             else: # Challenge was not selected for processing or wasn't pending
-                # Add its current state (or web state if no prior state) to the new state for this platform
                 old_state_for_this_chal = self.get_challenge_from_state(platform_key, challenge_id)
                 if old_state_for_this_chal:
-                    # Ensure 'pending' status from web fetch is preserved if it's more current
-                    # but only if it was truly pending from web, otherwise keep old 'pending' status
                     if 'pending' in chal_data_from_web and chal_data_from_web['pending']:
                          old_state_for_this_chal['pending'] = True
-                    # else, if chal_data_from_web['pending'] is False, it means it's not pending from web,
-                    # so old_state_for_this_chal['pending'] (which should also be False or absent) is fine.
                     next_global_state[platform_key].append(old_state_for_this_chal)
                 else:
-                    # If no old state, add the data from web (which might be marked as pending or not)
                     next_global_state[platform_key].append(chal_data_from_web)
         
         self.state = next_global_state # Replace the entire state with the newly built one
