@@ -128,11 +128,11 @@ if __name__ == "__main__":
             if platform_key == 'global_settings': # Skip the global_settings section here
                 continue
             
+            print(f"\n--- Platform: {platform_key} ---")
             if not config.getboolean(platform_key, 'enabled', fallback=False):
                 print(f"Platform '{platform_key}' is disabled. Skipping.")
                 continue
 
-            print(f"\n--- Platform: {platform_key} ---")
             base_url = config.get(platform_key, 'base_url', fallback=None)
             username = config.get(platform_key, 'username', fallback=None)
             password = config.get(platform_key, 'password', fallback=None) # Ensure you handle this securely
@@ -148,7 +148,6 @@ if __name__ == "__main__":
                 continue
 
             # Instantiate the specific connector
-            # You might need to adjust args if some connectors take api_keys instead of user/pass
             connector_instance = ConnectorClass(base_url, username, password)
             
             print(f"Attempting login to '{platform_key}'...")

@@ -94,7 +94,7 @@ class ChallengeStateManager:
             return True
         
         # Fields to check for changes
-        fields_to_compare = ['value', 'solves', 'solved_by_me']
+        fields_to_compare = ['value', 'solves']
         for field in fields_to_compare:
             if new_website_chal_data.get(field) != old_data.get(field):
                 return True # Pending if any field differs
@@ -134,12 +134,10 @@ class ChallengeStateManager:
             if platform_key not in next_global_state:
                 next_global_state[platform_key] = []
         
-        # Also, carry over platforms that might be in old state but not in current website fetch,
-        # unless we decide to prune them. For now, let's start fresh with platforms seen in this run.
-        # To keep old platforms if no challenges were fetched for them this run:
-        # for p_key in self.state:
-        #     if p_key not in next_global_state:
-        #         next_global_state[p_key] = list(self.state[p_key]) # copy old state for that platform
+        # Keep old plaform
+        for p_key in self.state:
+            if p_key not in next_global_state:
+                next_global_state[p_key] = list(self.state[p_key]) # copy old state for that platform
 
 
         for chal_data_from_web in all_challenges:
@@ -149,7 +147,7 @@ class ChallengeStateManager:
             challenge_name = chal_data_from_web.get('name', f"challenge_{challenge_id}")
 
             # Normalize challenge_name to be filesystem-friendly (basic example)
-            safe_challenge_name = "".join(c if c.isalnum() or c in (' ', '_', '-') else '_' for c in challenge_name).strip()
+            safe_challenge_name = "".join(c if c.isalnum() or c in ('_', '-') else '' for c in challenge_name.replace(' ', '_')).strip()
             if not safe_challenge_name: safe_challenge_name = f"challenge_{challenge_id}"
 
 
@@ -235,7 +233,9 @@ class ChallengeStateManager:
                 # 3. Download attachments
                 # Logic: Download if the 'challenge' subfolder was just created,
                 # OR if you implement a more sophisticated check (e.g., file missing, force update)
-                if detailed_chal_data.get('files') and newly_created_challenge_files_subfolder:
+                problem_with_download = False
+                retry_download = self.get_challenge_from_state(platform_key, detailed_chal_data.get('id', challenge_id)).get('need_download_again', False)
+                if detailed_chal_data.get('files') and (newly_created_challenge_files_subfolder or retry_download):
                     print(f"\tDownloading attachments for '{safe_challenge_name}'...")
                     for file_relative_url in detailed_chal_data['files']: # Assuming 'files' is a list of relative URLs
                         attachment_name = ChallengeStateManager.get_filename_from_url(file_relative_url)
@@ -256,12 +256,14 @@ class ChallengeStateManager:
                                 print(f"\t\tError saving file {attachment_name}: {e}")
                         else:
                             print(f"\t\tFailed to download '{attachment_name}'.")
+                            problem_with_download = True
                 
                 # This challenge has been processed, update its state for saving
                 # Use detailed_chal_data as it's more complete, but ensure 'platform' is there
                 final_chal_data_for_state = dict(detailed_chal_data) # Make a copy
                 final_chal_data_for_state['platform'] = platform_key 
-                final_chal_data_for_state['pending'] = False # No longer pending
+                final_chal_data_for_state['pending'] = problem_with_download # If some problem happend during download, mark that as pending
+                final_chal_data_for_state['need_download_again'] = problem_with_download
                 next_global_state[platform_key].append(final_chal_data_for_state)
 
             else: # Challenge was not selected for processing or wasn't pending

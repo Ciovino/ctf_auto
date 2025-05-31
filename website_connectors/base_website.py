@@ -11,10 +11,10 @@ class WebsiteConnectorBase(ABC):
         self.session = requests.Session()
         self.logged_in = False
 
-    def _get_page_content(self, url):
+    def _get_page_content(self, url, headers = None):
         # Normal GET request
         try:
-            response = self.session.get(url, allow_redirects=True)
+            response = self.session.get(url, headers = headers, allow_redirects=True, timeout = 10)
             response.raise_for_status()
             return response
         except requests.exceptions.RequestException as e:

@@ -8,3 +8,10 @@ base_url = https://cc-ctfd.m0lecon.it
 username = YOUR NAME
 password = YouR_s3cRET_P4sSw0rD
 connector = website_connectors.molecon.WebsiteMolecon
+
+[cyberchallenge]
+enabled = true
+base_url = https://ctf.cyberchallenge.it
+username = your@email.com
+password = An0Th3r_s3cRET_P4sSw0rD
+connector = website_connectors.cyberchallenge.WebsiteCyberChallenge
