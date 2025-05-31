@@ -12,7 +12,7 @@ class WebsiteCyberChallenge(WebsiteConnectorBase):
         self.files_token = None # Get this after login
         
         self.current_user = '/api/currentUser'
-        self.my_name = 'DUMMY NAME'
+        self.display_name = 'DUMMY NAME'
     
     def _get_display_name(self):
         if not self.logged_in:
@@ -170,7 +170,7 @@ class WebsiteCyberChallenge(WebsiteConnectorBase):
             if 'displayedName' in solver:
                 parsed_solvers.append(solver['displayedName'])
                 
-        parsed_details['solved_by_me'] = self.my_name in parsed_solvers            
+        parsed_details['solved_by_me'] = self.display_name in parsed_solvers            
                 
         return parsed_details, parsed_solvers
         
