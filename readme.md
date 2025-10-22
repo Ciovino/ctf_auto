@@ -5,8 +5,6 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
 ## Features
 
 * **Multi-Platform Support**: Easily extendable to support various CTF platforms through a connector-based architecture.
-* **Automated Setup**: Includes a setup script (`setup.sh`) to create a Python virtual environment, install dependencies, and create a convenient shell alias.
-* **User-Configurable Alias**: Choose your own command name for running the script during setup.
 * **Centralized Configuration**: Manage global settings (like save directories) and site-specific credentials/details via a single `config.ini` file.
 * **Automatic Downloads**: Fetches challenge descriptions, points, solve counts, solver lists, and attachments.
 * **Organized Folder Structure**: Saves challenges in a structured way: `MAIN_DIRECTORY/PLATFORM_NAME/CATEGORY_NAME/CHALLENGE_NAME/`.
@@ -26,16 +24,9 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
     cd ctf_auto
     ```
 
-2.  **Run the Setup Script**:
-    This script will prepare your environment.
-    ```bash
-    chmod +x setup.sh
-    ./setup.sh
-    ```
-    * The script will create a Python virtual environment (default: `.venv/`).
-    * It will install the required Python packages from `requirements.txt`.
-    * You will be prompted to enter a preferred alias (command name) to run the main program.
-    * After the script finishes, you might need to reload your shell's configuration file or, simply restart your terminal.
+2.  **Install dependencies**:
+    * Create a Python virtual environment.
+    * Install the required Python packages from `requirements.txt`.
 
 3.  **Configure `config.ini`**:
     * If `config.ini` does not exist in the script's directory, you might to create it from `config.ini.example`.
@@ -52,7 +43,7 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
         ```ini
         [platform_example]
         enabled = true
-        base_url = [https://ctfplatform.com](https://ctfplatform.com)
+        base_url = https://ctfplatform.com
         username = your_username
         password = your_password
         connector = website_connectors.platform_connector.PlatformConnector
@@ -62,10 +53,10 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
 
 ## Usage
 
-Once setup and configuration are complete, run the script using the alias you defined during setup:
+Once setup and configuration are complete, run the script:
 
 ```bash
-your_chosen_alias
+python main.py
 ```
 The program will:
 1. Read the config.ini.
@@ -103,39 +94,36 @@ project_root_directory/         # Your cloned repository
 │   ├── base_website.py
 │   ├── molecon.py
 │   └── ... (other custom connectors)
-├── .venv/
 ├── config.ini
 ├── main.py
 ├── challenge_state_manager.py
-├── setup.sh
 ├── requirements.txt
 └── README.md
 ```
 
 Inside each challenge folder (e.g., SuperSecureLogin/):
-* general_info.md: Contains the challenge name, ID, platform, category, points, solved status, and description.
-* solvers.txt: Lists users who have solved the challenge and the total solve count.
-* challenge/: A subfolder containing any downloadable attachments for the challenge.
+* `general_info.md`: Contains the challenge name, ID, platform, category, points, solved status, and description.
+* `solvers.txt`: Lists users who have solved the challenge and the total solve count.
+* `challenge/`: A subfolder containing any downloadable attachments for the challenge.
 
 ## How It Works
-* Pending Challenges: A challenge is considered "pending" an update if its point value, number of solves, or your "solved by me" status has changed since the last check, or if it's entirely new.
-* Updates: When updating a challenge:
-    - general_info.md and solvers.txt are overwritten with the latest information.
-    - Attachments are typically downloaded into the challenge/ subfolder if the subfolder is newly created for that challenge. Existing files in challenge/ are generally not overwritten unless specific logic is added for it.
-* Scope: You can choose to update all pending challenges or filter by a specific platform/category.
+* *Pending Challenges*: A challenge is considered "pending" an update if its point value, number of solves, or your "solved by me" status has changed since the last check, or if it's entirely new.
+* *Updates*: When updating a challenge:
+    - `general_info.md` and `solvers.txt` are overwritten with the latest information.
+    - Attachments are typically downloaded into the `challenge/` subfolder if the subfolder is newly created for that challenge. Existing files in `challenge/` are generally not overwritten unless specific logic is added for it.
+* *Scope*: You can choose to update all pending challenges or filter by a specific platform/category.
 
 ## Adding New CTF Platforms
 This tool is designed to be extensible:
-1. Create a Connector Class:
-    * Develop a new Python class that inherits from website_connectors.base_website.WebsiteConnectorBase.
-    * Implement all the abstract methods defined in the base class (e.g., login(), get_challenges(), get_challenge_details(), download_attachment()) with the specific logic for the new CTF platform.
-    * Place your new connector file (e.g., my_new_site_connector.py) inside the website_connectors/ directory. Make sure this directory has an __init__.py file to be treated as a package.
-2. Configure in config.ini:
+1. **Create a Connector Class**:
+    * Develop a new Python class that inherits from `website_connectors.base_website.WebsiteConnectorBase`.
+    * Implement all the abstract methods defined in the base class (e.g., `login()`, `get_challenges()`, `get_challenge_details()`, `download_attachment()`) with the specific logic for the new CTF platform.
+    * Place your new connector file (e.g., `my_new_site_connector.py`) inside the `website_connectors/` directory. Make sure this directory has an `__init__.py` file to be treated as a package.
+2. **Configure in `config.ini`**:
     * Add a new section for your platform (e.g., [my_new_site]).
-    * Set enabled = true.
-    * Provide base_url and any necessary authentication details (e.g., username, password, api_key).
-    * Set connector_class to the full path of your new class, for example: website_connectors.my_new_site_connector.MyNewSiteConnectorClass.
+    * Set `enabled = true`.
+    * Provide `base_url` and any necessary authentication details (e.g., `username`, `password`, `api_key`).
+    * Set `connector_class` to the full path of your new class, for example: `website_connectors.my_new_site_connector.MyNewSiteConnectorClass`.
 
 ## Notes
-* The name of the virtual environment folder (default .venv) can be changed by editing the VENV_NAME variable within the setup.sh script if needed.
-* Ensure your requirements.txt is up-to-date, especially if you add new connectors that have specific Python package dependencies. The setup.sh script will install these.
+* Ensure your `requirements.txt` is up-to-date, especially if you add new connectors that have specific Python package dependencies. To update the requirements file you can run `pip freeze > requirements.txt`
