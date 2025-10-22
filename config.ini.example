@@ -15,3 +15,10 @@ base_url = https://ctf.cyberchallenge.it
 username = your@email.com
 password = An0Th3r_s3cRET_P4sSw0rD
 connector = website_connectors.cyberchallenge.WebsiteCyberChallenge
+
+[olicyber]
+enabled = true
+base_url = https://training.olicyber.it
+username = your@email.com
+password = A_pasSW0rD_y37_4GaiN
+connector = website_connectors.olicyber.WebsiteOliCyber

@@ -9,6 +9,7 @@ Automatically fetch and manage Capture The Flag (CTF) challenges from multiple s
 * **Automatic Downloads**: Fetches challenge descriptions, points, solve counts, solver lists, and attachments.
 * **Organized Folder Structure**: Saves challenges in a structured way: `MAIN_DIRECTORY/PLATFORM_NAME/CATEGORY_NAME/CHALLENGE_NAME/`.
 * **State Management**: Keeps track of challenge updates to only download new or modified information.
+* **Supported Platforms**: Connector for the following platform are already implemented: [**m0lecon**](https://cc-ctfd.m0lecon.it), [**CyberChallenge**](https://ctf.cyberchallenge.it), [**OliCyber**](https://training.olicyber.it)
 
 ## Prerequisites
 
